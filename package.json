@@ -1,0 +1,1 @@
+{\n  "name": "nexus-launchpad",\n  "version": "1.0.0",\n  "description": "A decentralized launchpad for Solana projects.",\n  "main": "index.js",\n  "scripts": {\n    "start": "node index.js"\n  },\n  "dependencies": {\n    "express": "^4.17.1",\n    "dotenv": "^10.0.0",\n    "sqlite3": "^5.0.0",\n    "@solana/web3.js": "^1.28.0"\n  }\n}
