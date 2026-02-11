@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>NEXUS LAUNCHPAD 2121 - COMPLETE</title>
+  
+  <!-- Solana Web3.js -->
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <!-- Base58 encoding for wallet export/import -->
+  <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0e1a 0%, #1a0e2e 50%, #16213e 100%);
+      color: #00fff7;
+      font-family: 'IBM Plex Mono', monospace;
+      overflow-x: hidden;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(0deg, transparent 24%, rgba(0, 255, 247, 0.05) 25%, rgba(0, 255, 247, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 247, 0.05) 75%, rgba(0, 255, 247, 0.05) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(0, 255, 247, 0.05) 25%, rgba(0, 255, 247, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 247, 0.05) 75%, rgba(0, 255, 247, 0.05) 76%, transparent 77%, transparent);
+      background-size: 50px 50px;
+      z-index: 0;
+      pointer-events: none;
+      animation: grid-move 20s linear infinite;
+    }
+
+    @keyframes grid-move {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(50px); }
+    }
+
+    .neon-cyan { color: #00fff7; text-shadow: 0 0 10px #00fff7, 0 0 20px #00a8cc; }
+    .neon-violet { color: #e400ff; text-shadow: 0 0 10px #e400ff, 0 0 20px #a000cc; }
+
+    .glass-panel {
+      background: rgba(20, 30, 50, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 247, 0.2);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .glass-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #00fff7, transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes shimmer { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+    input, textarea, select {
+      background: rgba(10, 20, 40, 0.8);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 8px;
+      color: #00fff7;
+      padding: 12px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #00fff7;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.3), inset 0 0 10px rgba(0, 255, 247, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00fff7 0%, #0099cc 100%);
+      color: #0a0e1a;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 12px;
+      width: 100%;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 0 40px rgba(0, 255, 247, 0.8);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: rgba(0, 255, 247, 0.1);
+      color: #00fff7;
+      border: 1px solid #00fff7;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 11px;
+    }
+
+    .btn-danger {
+      background: rgba(255, 0, 85, 0.2);
+      color: #ff0055;
+      border: 1px solid #ff0055;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-family: 'Space Mono', monospace;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 11px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .console {
+      background: rgba(5, 10, 20, 0.9);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      height: 250px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.6;
+      font-family: 'Space Mono', monospace;
+    }
+
+    .console-line {
+      margin: 4px 0;
+      animation: fadeIn 0.3s ease;
+      word-break: break-word;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .section-label {
+      color: #e400ff;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: clamp(28px, 6vw, 56px);
+      font-family: 'Space Mono', monospace;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.1;
+    }
+
+    .spinner {
+      border: 3px solid rgba(0, 255, 247, 0.1);
+      border-top: 3px solid #00fff7;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .success-box {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .error-box {
+      background: rgba(255, 0, 85, 0.1);
+      border: 1px solid rgba(255, 0, 85, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      color: #ff0055;
+    }
+
+    .tx-link {
+      color: #00fff7;
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 10px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .tab {
+      background: rgba(0, 255, 247, 0.1);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      color: #00fff7;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background: rgba(0, 255, 247, 0.3);
+      border-color: #00fff7;
+      box-shadow: 0 0 20px rgba(0, 255, 247, 0.4);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Wallet styles */
+    .wallet-card {
+      background: rgba(0, 255, 247, 0.05);
+      border: 1px solid rgba(0, 255, 247, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .wallet-address {
+      font-size: 11px;
+      color: #0099cc;
+      word-break: break-all;
+      margin-top: 8px;
+    }
+
+    .secret-key {
+      background: rgba(255, 170, 0, 0.1);
+      border: 1px solid rgba(255, 170, 0, 0.3);
+      color: #ffaa00;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      word-break: break-all;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .secret-key.show {
+      display: block;
+    }
+
+    /* Trading panel */
+    .trade-log {
+      background: rgba(5, 10, 20, 0.9);
+      border: 1px solid rgba(0, 255, 247, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 11px;
+      margin-top: 16px;
+    }
+
+    .trade-entry {
+      margin: 4px 0;
+      padding: 4px;
+      border-left: 2px solid #00fff7;
+      padding-left: 8px;
+    }
+
+    .trade-entry.buy {
+      border-left-color: #00ff88;
+    }
+
+    .trade-entry.sell {
+      border-left-color: #ff0055;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <div class="container">
+    <div class="header">
+      <h1>
+        <span class="neon-cyan">NEXUS</span><br>
+        <span class="neon-violet">LAUNCHPAD</span>
+      </h1>
+      <p style="color: #00a8cc; font-size: 12px; margin-top: 8px;">COMPLETE TOKEN DEPLOYMENT SYSTEM</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('deploy')">Deploy Token</div>
+      <div class="tab" onclick="switchTab('wallets')">Wallets</div>
+      <div class="tab" onclick="switchTab('trading')">Market Maker</div>
+      <div class="tab" onclick="switchTab('console')">Console</div>
+    </div>
+
+    <!-- Deploy Token Tab -->
+    <div id="deploy-tab" class="tab-content active">
+      <div class="glass-panel">
+        <div class="section-label">// NETWORK CONFIGURATION</div>
+        <div class="grid-2">
+          <div>
+            <label>Network</label>
+            <select id="networkSelect" onchange="changeNetwork()">
+              <option value="devnet">Devnet (Test)</option>
+              <option value="mainnet">Mainnet (Production)</option>
+            </select>
+          </div>
+          <div>
+            <label>Pinata JWT (for IPFS)</label>
+            <input type="password" id="pinataJwt" placeholder="Optional - for image upload">
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel">
+        <div class="section-label">// TOKEN PARAMETERS</div>
+        
+        <div class="grid-2">
+          <div>
+            <label>Token Name *</label>
+            <input type="text" id="tokenName" placeholder="My Token" maxlength="32">
+          </div>
+          <div>
+            <label>Symbol *</label>
+            <input type="text" id="tokenSymbol" placeholder="TKN" maxlength="10">
+          </div>
+        </div>
+
+        <label>Description</label>
+        <textarea id="tokenDesc" placeholder="Token description..." maxlength="200" style="min-height: 80px; margin-bottom: 16px;"></textarea>
+
+        <label>Token Image</label>
+        <input type="file" id="tokenImageFile" accept="image/*" style="margin-bottom: 8px;">
+        <input type="url" id="tokenImageUrl" placeholder="Or enter image URL" style="margin-bottom: 16px;">
+
+        <div class="grid-2">
+          <div>
+            <label>Total Supply *</label>
+            <input type="number" id="tokenSupply" placeholder="1000000" min="1">
+          </div>
+          <div>
+            <label>Decimals</label>
+            <select id="tokenDecimals">
+              <option value="6">6 (Standard)</option>
+              <option value="9" selected>9 (SOL-like)</option>
+              <option value="18">18 (ETH-like)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="deployBtn" onclick="deployToken()" style="margin-top: 24px;">
+          Deploy Token
+        </button>
+
+        <div id="deployResult"></div>
+      </div>
+    </div>
+
+    <!-- Wallets Tab -->
+    <div id="wallets-tab" class="tab-content">
+      <div class="glass-panel">
+        <div class="section-label">// CREATE NEW WALLET</div>
+        <button class="btn-primary" onclick="createNewWallet()">Generate New Wallet</button>
+        <div id="newWalletResult"></div>
+      </div>
+
+      <div class="glass-panel">
+        <div class="section-label">// IMPORT WALLET</div>
+        <label>Private Key (Base58 or JSON array)</label>
+        <textarea id="importKey" placeholder="Enter private key..." style="min-height: 80px; margin-bottom: 16px;"></textarea>
+        <button class="btn-secondary" onclick="importWallet()">Import Wallet</button>
+        <div id="importResult"></div>
+      </div>
+
+      <div class="glass-panel">
+        <div class="section-label">// MANAGED WALLETS</div>
+        <div id="walletList">
+          <p style="color: #0099cc; font-size: 12px;">No wallets created or imported yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trading Tab -->
+    <div id="trading-tab" class="tab-content">
+      <div class="glass-panel">
+        <div class="section-label">// MARKET MAKER BOT</div>
+        
+        <div class="grid-2">
+          <div>
+            <label>Token Mint Address</label>
+            <input type="text" id="tradeTokenMint" placeholder="Enter mint address...">
+          </div>
+          <div>
+            <label>Trading Wallet</label>
+            <select id="tradingWalletSelect">
+              <option value="">Select wallet...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 16px;">
+          <div>
+            <label>Trade Amount (SOL)</label>
+            <input type="number" id="tradeAmount" value="0.01" step="0.001" min="0.001">
+          </div>
+          <div>
+            <label>Interval (seconds)</label>
+            <input type="number" id="tradeInterval" value="30" min="5">
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 16px;">
+          <div>
+            <label>Buy/Sell Ratio</label>
+            <select id="tradeRatio">
+              <option value="0.5">50/50</option>
+              <option value="0.6">60% Buy / 40% Sell</option>
+              <option value="0.7" selected>70% Buy / 30% Sell</option>
+              <option value="0.8">80% Buy / 20% Sell</option>
+            </select>
+          </div>
+          <div>
+            <label>Max Slippage (%)</label>
+            <input type="number" id="slippage" value="1" min="0.1" max="5" step="0.1">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px;">
+          <button class="btn-primary" id="startTradingBtn" onclick="startTrading()">Start Trading</button>
+          <button class="btn-danger" id="stopTradingBtn" onclick="stopTrading()" disabled>Stop Trading</button>
+        </div>
+
+        <div class="trade-log" id="tradeLog">
+          <div style="color: #0099cc;">Trading bot ready. Configure parameters and start.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console Tab -->
+    <div id="console-tab" class="tab-content">
+      <div class="glass-panel">
+        <div class="section-label">// SYSTEM CONSOLE</div>
+        <div class="console" id="console">
+          <div class="console-line" style="color: #00ff88;">[SYSTEM] NEXUS Launchpad initialized</div>
+          <div class="console-line">[SYSTEM] Ready for token deployment</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================================
+    // CONFIGURATION & CONSTANTS
+    // =====================================================================
+    
+    const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+    const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+    const TOKEN_METADATA_PROGRAM_ID = new solanaWeb3.PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
+    
+    const MINT_SIZE = 82;
+    
+    const CONFIG = {
+  devnet: {
+    rpc: 'https://api.devnet.solana.com',
+    jupiter: 'https://api.jup.ag/ultra/v1'
+  },
+  mainnet: {
+    rpc: 'https://api.mainnet-beta.solana.com',
+    jupiter: 'https://api.jup.ag/ultra/v1'
+  }
+};
+
+    let connection = new solanaWeb3.Connection(CONFIG.devnet.rpc, 'confirmed');
+    let currentNetwork = 'devnet';
+    let wallets = [];
+    let tradingInterval = null;
+    let deployedToken = null;
+
+    // =====================================================================
+    // UTILITY FUNCTIONS
+    // =====================================================================
+
+    function log(msg, type = 'info') {
+      const consoleDiv = document.getElementById('console');
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      const time = new Date().toLocaleTimeString();
+      line.textContent = `[${time}] ${msg}`;
+      
+      if (type === 'error') line.style.color = '#ff0055';
+      if (type === 'success') line.style.color = '#00ff88';
+      if (type === 'warn') line.style.color = '#ffaa00';
+      if (type === 'trade') line.style.color = '#e400ff';
+      
+      consoleDiv.appendChild(line);
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabName + '-tab').classList.add('active');
+      
+      if (tabName === 'wallets') updateWalletList();
+      if (tabName === 'trading') updateTradingWalletSelect();
+    }
+
+    function changeNetwork() {
+      currentNetwork = document.getElementById('networkSelect').value;
+      connection = new solanaWeb3.Connection(CONFIG[currentNetwork].rpc, 'confirmed');
+      log(`Switched to ${currentNetwork}`, currentNetwork === 'mainnet' ? 'warn' : 'info');
+    }
+
+    // =====================================================================
+    // WALLET MANAGEMENT
+    // =====================================================================
+
+    function createNewWallet() {
+      try {
+        const keypair = solanaWeb3.Keypair.generate();
+        const wallet = {
+          name: `Wallet ${wallets.length + 1}`,
+          publicKey: keypair.publicKey.toString(),
+          secretKey: Array.from(keypair.secretKey),
+          keypair: keypair
+        };
+        
+        wallets.push(wallet);
+        
+        const resultDiv = document.getElementById('newWalletResult');
+        resultDiv.innerHTML = `
+          <div class="success-box" style="margin-top: 16px;">
+            <div style="font-weight: bold; margin-bottom: 8px;">✓ Wallet Created</div>
+            <div class="wallet-address">Address: ${wallet.publicKey}</div>
+            <div style="margin-top: 12px; font-size: 11px; color: #ffaa00;">
+              ⚠️ SAVE THIS PRIVATE KEY - IT WON'T BE SHOWN AGAIN
+            </div>
+            <button class="btn-secondary" style="margin-top: 8px;" onclick="this.nextElementSibling.classList.toggle('show')">
+              Show Private Key
+            </button>
+            <div class="secret-key">
+              ${JSON.stringify(wallet.secretKey)}
+            </div>
+          </div>
+        `;
+        
+        log(`Created wallet: ${wallet.publicKey.slice(0, 20)}...`, 'success');
+        updateWalletList();
+        updateTradingWalletSelect();
+      } catch (err) {
+        log(`Error creating wallet: ${err.message}`, 'error');
+      }
+    }
+
+    function importWallet() {
+      try {
+        const input = document.getElementById('importKey').value.trim();
+        let secretKey;
+        
+        // Try Base58 first
+        try {
+          secretKey = bs58.decode(input);
+        } catch {
+          // Try JSON array
+          secretKey = new Uint8Array(JSON.parse(input));
+        }
+        
+        const keypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+        const wallet = {
+          name: `Imported ${wallets.length + 1}`,
+          publicKey: keypair.publicKey.toString(),
+          secretKey: Array.from(keypair.secretKey),
+          keypair: keypair
+        };
+        
+        wallets.push(wallet);
+        
+        document.getElementById('importResult').innerHTML = `
+          <div class="success-box" style="margin-top: 16px;">
+            ✓ Wallet imported: ${wallet.publicKey.slice(0, 20)}...
+          </div>
+        `;
+        
+        log(`Imported wallet: ${wallet.publicKey.slice(0, 20)}...`, 'success');
+        updateWalletList();
+        updateTradingWalletSelect();
+      } catch (err) {
+        log(`Import failed: ${err.message}`, 'error');
+        document.getElementById('importResult').innerHTML = `
+          <div class="error-box" style="margin-top: 16px;">
+            Invalid private key format
+          </div>
+        `;
+      }
+    }
+
+    function updateWalletList() {
+      const listDiv = document.getElementById('walletList');
+      if (wallets.length === 0) {
+        listDiv.innerHTML = '<p style="color: #0099cc; font-size: 12px;">No wallets created or imported yet.</p>';
+        return;
+      }
+      
+      listDiv.innerHTML = wallets.map((w, i) => `
+        <div class="wallet-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong>${w.name}</strong>
+            <button class="btn-secondary" style="padding: 6px 12px; font-size: 10px;" onclick="exportWallet(${i})">Export</button>
+          </div>
+          <div class="wallet-address">${w.publicKey}</div>
+          <div style="margin-top: 8px; font-size: 11px; color: #0099cc;">
+            Balance: <span id="balance-${i}">--</span> SOL
+          </div>
+        </div>
+      `).join('');
+      
+      // Update balances
+      wallets.forEach(async (w, i) => {
+        try {
+          const balance = await connection.getBalance(new solanaWeb3.PublicKey(w.publicKey));
+          document.getElementById(`balance-${i}`).textContent = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+        } catch (e) {}
+      });
+    }
+
+    function exportWallet(index) {
+      const w = wallets[index];
+      const exportData = {
+        publicKey: w.publicKey,
+        secretKey: w.secretKey,
+        base58: bs58.encode(new Uint8Array(w.secretKey))
+      };
+      
+      alert(`Private Key (Base58):\n${exportData.base58}\n\nJSON Array:\n${JSON.stringify(w.secretKey)}`);
+    }
+
+    function updateTradingWalletSelect() {
+      const select = document.getElementById('tradingWalletSelect');
+      select.innerHTML = '<option value="">Select wallet...</option>' + 
+        wallets.map((w, i) => `<option value="${i}">${w.name} - ${w.publicKey.slice(0, 16)}...</option>`).join('');
+    }
+
+    // =====================================================================
+    // TOKEN DEPLOYMENT (FIXED METAPLEX METADATA)
+    // =====================================================================
+
+    async function uploadToPinata(jsonData, imageFile) {
+      const jwt = document.getElementById('pinataJwt').value.trim();
+      if (!jwt) return null;
+      
+      try {
+        // Upload image first if provided
+        let imageUrl = document.getElementById('tokenImageUrl').value.trim();
+        
+        if (imageFile && !imageUrl) {
+          const formData = new FormData();
+          formData.append('file', imageFile);
+          
+          const res = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}` },
+            body: formData
+          });
+          
+          const data = await res.json();
+          imageUrl = `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
+          log(`Image uploaded: ${imageUrl}`, 'success');
+        }
+        
+        // Upload metadata JSON
+        const metadata = {
+          name: jsonData.name,
+          symbol: jsonData.symbol,
+          description: jsonData.description,
+          image: imageUrl || `https://placehold.co/400x400/00fff7/0a0e1a?text=${jsonData.symbol}`,
+          attributes: [],
+          properties: {
+            files: [{ uri: imageUrl || '', type: 'image/png' }],
+            category: 'image',
+            creators: [{ address: jsonData.creator, share: 100 }]
+          }
+        };
+        
+        const res = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwt}`
+          },
+          body: JSON.stringify({
+            pinataContent: metadata,
+            pinataMetadata: { name: `${jsonData.symbol}-metadata` }
+          })
+        });
+        
+        const data = await res.json();
+        const uri = `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
+        log(`Metadata uploaded: ${uri}`, 'success');
+        return uri;
+      } catch (err) {
+        log(`Pinata upload failed: ${err.message}`, 'error');
+        return null;
+      }
+    }
+
+    // Create metadata instruction with CORRECT format for Metaplex
+    function createMetadataInstruction(mint, name, symbol, uri, payer, updateAuthority) {
+      const metadataPDA = solanaWeb3.PublicKey.findProgramAddressSync(
+        [new TextEncoder().encode('metadata'), TOKEN_METADATA_PROGRAM_ID.toBytes(), mint.toBytes()],
+        TOKEN_METADATA_PROGRAM_ID
+      )[0];
+      
+      // CreateMetadataAccountV3 instruction layout
+      // Discriminator: 8 bytes [33, 18, 37, 213, 20, 112, 118, 169]
+      // Args: DataV2 + isMutable (bool) + collectionDetails (option)
+      
+      const nameBytes = new TextEncoder().encode(name);
+      const symbolBytes = new TextEncoder().encode(symbol);
+      const uriBytes = new TextEncoder().encode(uri);
+      
+      // Calculate size
+      let dataSize = 8; // discriminator
+      dataSize += 4 + nameBytes.length; // name (string)
+      dataSize += 4 + symbolBytes.length; // symbol (string)
+      dataSize += 4 + uriBytes.length; // uri (string)
+      dataSize += 2; // sellerFeeBasisPoints (u16)
+      dataSize += 1; // creators option
+      dataSize += 1; // collection option
+      dataSize += 1; // uses option
+      dataSize += 1; // isMutable (bool)
+      dataSize += 1; // collectionDetails option
+      
+      const data = new Uint8Array(dataSize);
+      let offset = 0;
+      
+      // Discriminator for CreateMetadataAccountV3
+      const discriminator = new Uint8Array([33, 18, 37, 213, 20, 112, 118, 169]);
+      data.set(discriminator, offset);
+      offset += 8;
+      
+      // Write string (4 bytes length + content)
+      const writeString = (bytes) => {
+        const view = new DataView(data.buffer, offset);
+        view.setUint32(0, bytes.length, true); // little-endian
+        offset += 4;
+        data.set(bytes, offset);
+        offset += bytes.length;
+      };
+      
+      writeString(nameBytes);
+      writeString(symbolBytes);
+      writeString(uriBytes);
+      
+      // sellerFeeBasisPoints (u16) - 0 for fungible tokens
+      const view = new DataView(data.buffer, offset);
+      view.setUint16(0, 0, true);
+      offset += 2;
+      
+      // creators: None (0)
+      data[offset++] = 0;
+      
+      // collection: None (0)
+      data[offset++] = 0;
+      
+      // uses: None (0)
+      data[offset++] = 0;
+      
+      // isMutable: true (1)
+      data[offset++] = 1;
+      
+      // collectionDetails: None (0)
+      data[offset++] = 0;
+      
+      const keys = [
+        { pubkey: metadataPDA, isSigner: false, isWritable: true },
+        { pubkey: mint, isSigner: false, isWritable: false },
+        { pubkey: payer, isSigner: true, isWritable: true },
+        { pubkey: updateAuthority, isSigner: true, isWritable: false },
+        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+      ];
+      
+      return new solanaWeb3.TransactionInstruction({
+        keys,
+        programId: TOKEN_METADATA_PROGRAM_ID,
+        data: data.slice(0, offset)
+      });
+    }
+
+    // SPL Token instruction builders using Uint8Array
+    function createInitializeMintInstruction(mint, decimals, mintAuthority, freezeAuthority) {
+      const keys = [
+        { pubkey: mint, isSigner: false, isWritable: true },
+        { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
+      ];
+      
+      const data = new Uint8Array(67);
+      let offset = 0;
+      
+      data[offset++] = 0; // InitializeMint instruction
+      data[offset++] = decimals;
+      
+      // Mint authority
+      data.set(mintAuthority.toBytes(), offset);
+      offset += 32;
+      
+      // Freeze authority option
+      data[offset++] = freezeAuthority ? 1 : 0;
+      if (freezeAuthority) {
+        data.set(freezeAuthority.toBytes(), offset);
+        offset += 32;
+      }
+      
+      return new solanaWeb3.TransactionInstruction({
+        keys,
+        programId: TOKEN_PROGRAM_ID,
+        data: data.slice(0, offset)
+      });
+    }
+
+    function createAssociatedTokenAccountInstruction(payer, associatedToken, owner, mint) {
+      const keys = [
+        { pubkey: payer, isSigner: true, isWritable: true },
+        { pubkey: associatedToken, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: false, isWritable: false },
+        { pubkey: mint, isSigner: false, isWritable: false },
+        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: solanaWeb3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false }
+      ];
+      
+      return new solanaWeb3.TransactionInstruction({
+        keys,
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        data: new Uint8Array(0)
+      });
+    }
+
+    async function getAssociatedTokenAddress(mint, owner) {
+      const [address] = await solanaWeb3.PublicKey.findProgramAddress(
+        [owner.toBytes(), TOKEN_PROGRAM_ID.toBytes(), mint.toBytes()],
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      return address;
+    }
+
+    function createMintToInstruction(mint, destination, authority, amount) {
+      const keys = [
+        { pubkey: mint, isSigner: false, isWritable: true },
+        { pubkey: destination, isSigner: false, isWritable: true },
+        { pubkey: authority, isSigner: true, isWritable: false }
+      ];
+      
+      const data = new Uint8Array(9);
+      data[0] = 7; // MintTo instruction
+      
+      // Amount as u64 little-endian
+      const view = new DataView(data.buffer);
+      view.setBigUint64(1, BigInt(amount), true);
+      
+      return new solanaWeb3.TransactionInstruction({
+        keys,
+        programId: TOKEN_PROGRAM_ID,
+        data
+      });
+    }
+
+    async function deployToken() {
+      const walletIndex = parseInt(document.getElementById('tradingWalletSelect').value);
+      if (walletIndex === -1 || !wallets[walletIndex]) {
+        alert('Please create or import a wallet first in the Wallets tab!');
+        return;
+      }
+
+      const wallet = wallets[walletIndex];
+      const name = document.getElementById('tokenName').value.trim();
+      const symbol = document.getElementById('tokenSymbol').value.trim().toUpperCase();
+      const supply = document.getElementById('tokenSupply').value;
+      const decimals = parseInt(document.getElementById('tokenDecimals').value);
+      const description = document.getElementById('tokenDesc').value.trim();
+      const imageFile = document.getElementById('tokenImageFile').files[0];
+
+      if (!name || !symbol || !supply) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      const btn = document.getElementById('deployBtn');
+      const resultDiv = document.getElementById('deployResult');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Deploying...';
+      resultDiv.innerHTML = '';
+
+      try {
+        log(`Starting deployment: ${name} (${symbol})`);
+        
+        // Check balance
+        const balance = await connection.getBalance(wallet.keypair.publicKey);
+        if (balance < 0.01 * solanaWeb3.LAMPORTS_PER_SOL) {
+          throw new Error('Insufficient SOL. Need at least 0.01 SOL.');
+        }
+
+        // Upload metadata to IPFS if JWT provided
+        let metadataUri = `data:application/json;base64,${btoa(JSON.stringify({
+          name, symbol, description,
+          image: `https://placehold.co/400x400/00fff7/0a0e1a?text=${symbol}`
+        }))}`;
+        
+        const pinataUri = await uploadToPinata({
+          name, symbol, description,
+          creator: wallet.publicKey
+        }, imageFile);
+        
+        if (pinataUri) metadataUri = pinataUri;
+
+        // Generate mint
+        const mintKeypair = solanaWeb3.Keypair.generate();
+        log(`Mint: ${mintKeypair.publicKey.toString().slice(0, 20)}...`);
+
+        // Get rent exemption
+        const lamports = await connection.getMinimumBalanceForRentExemption(MINT_SIZE);
+
+        // Build transaction
+        const transaction = new solanaWeb3.Transaction();
+
+        // Create mint account
+        transaction.add(solanaWeb3.SystemProgram.createAccount({
+          fromPubkey: wallet.keypair.publicKey,
+          newAccountPubkey: mintKeypair.publicKey,
+          space: MINT_SIZE,
+          lamports,
+          programId: TOKEN_PROGRAM_ID
+        }));
+
+        // Initialize mint
+        transaction.add(createInitializeMintInstruction(
+          mintKeypair.publicKey,
+          decimals,
+          wallet.keypair.publicKey,
+          wallet.keypair.publicKey
+        ));
+
+        // Create metadata
+        transaction.add(createMetadataInstruction(
+          mintKeypair.publicKey,
+          name,
+          symbol,
+          metadataUri,
+          wallet.keypair.publicKey,
+          wallet.keypair.publicKey
+        ));
+
+        // Create ATA
+        const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, wallet.keypair.publicKey);
+        transaction.add(createAssociatedTokenAccountInstruction(
+          wallet.keypair.publicKey,
+          ata,
+          wallet.keypair.publicKey,
+          mintKeypair.publicKey
+        ));
+
+        // Mint tokens
+        const mintAmount = BigInt(supply) * BigInt(10 ** decimals);
+        transaction.add(createMintToInstruction(
+          mintKeypair.publicKey,
+          ata,
+          wallet.keypair.publicKey,
+          mintAmount
+        ));
+
+        // Send transaction
+        transaction.feePayer = wallet.keypair.publicKey;
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+
+        transaction.partialSign(mintKeypair);
+        transaction.sign(wallet.keypair);
+
+        const signature = await connection.sendRawTransaction(transaction.serialize());
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        log(`✓ Token deployed: ${signature.slice(0, 20)}...`, 'success');
+
+        deployedToken = {
+          mint: mintKeypair.publicKey.toString(),
+          name,
+          symbol,
+          supply
+        };
+
+        const explorerUrl = currentNetwork === 'devnet' 
+          ? `https://explorer.solana.com/address/${mintKeypair.publicKey.toString()}?cluster=devnet`
+          : `https://explorer.solana.com/address/${mintKeypair.publicKey.toString()}`;
+
+        resultDiv.innerHTML = `
+          <div class="success-box">
+            <div style="font-size: 24px; margin-bottom: 8px;">🎉</div>
+            <div style="font-weight: bold; margin-bottom: 8px;">Token Deployed!</div>
+            <div style="font-size: 11px; margin-bottom: 4px;"><strong>${name}</strong> ($${symbol})</div>
+            <div style="font-size: 10px; color: #0099cc; margin-bottom: 8px;">Supply: ${supply}</div>
+            <a href="${explorerUrl}" target="_blank" class="tx-link">View on Explorer →</a>
+            <div style="margin-top: 8px; font-size: 10px; word-break: break-all; color: #00ff88;">
+              Mint: ${mintKeypair.publicKey.toString()}
+            </div>
+          </div>
+        `;
+
+      } catch (error) {
+        log(`ERROR: ${error.message}`, 'error');
+        resultDiv.innerHTML = `<div class="error-box">${error.message}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Deploy Token';
+      }
+    }
+
+    // =====================================================================
+    // JUPITER TRADING BOT
+    // =====================================================================
+
+    async function getJupiterQuote(inputMint, outputMint, amount, slippage) {
+      try {
+        const url = `${CONFIG[currentNetwork].jupiter}/quote?inputMint=${inputMint}&outputMint=${outputMint}&amount=${amount}&slippageBps=${slippage * 100}`;
+        const res = await fetch(url);
+        return await res.json();
+      } catch (err) {
+        log(`Quote error: ${err.message}`, 'error');
+        return null;
+      }
+    }
+
+    async function executeJupiterSwap(quote, wallet) {
+      try {
+        const res = await fetch(`${CONFIG[currentNetwork].jupiter}/swap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quoteResponse: quote,
+            userPublicKey: wallet.publicKey,
+            wrapAndUnwrapSol: true
+          })
+        });
+        
+        const { swapTransaction } = await res.json();
+        const transaction = solanaWeb3.VersionedTransaction.deserialize(
+          new Uint8Array(atob(swapTransaction).split('').map(c => c.charCodeAt(0)))
+        );
+        
+        // Sign and send
+        transaction.sign([wallet.keypair]);
+        const signature = await connection.sendRawTransaction(transaction.serialize());
+        await connection.confirmTransaction(signature);
+        
+        return signature;
+      } catch (err) {
+        log(`Swap failed: ${err.message}`, 'error');
+        return null;
+      }
+    }
+
+    async function startTrading() {
+      const walletIndex = document.getElementById('tradingWalletSelect').value;
+      if (!walletIndex || !wallets[walletIndex]) {
+        alert('Select a trading wallet');
+        return;
+      }
+
+      const mint = document.getElementById('tradeTokenMint').value.trim();
+      if (!mint) {
+        alert('Enter token mint address');
+        return;
+      }
+
+      const wallet = wallets[walletIndex];
+      const amount = parseFloat(document.getElementById('tradeAmount').value);
+      const interval = parseInt(document.getElementById('tradeInterval').value) * 1000;
+      const ratio = parseFloat(document.getElementById('tradeRatio').value);
+      const slippage = parseFloat(document.getElementById('slippage').value);
+
+      document.getElementById('startTradingBtn').disabled = true;
+      document.getElementById('stopTradingBtn').disabled = false;
+
+      log(`🤖 Trading bot started for ${mint.slice(0, 16)}...`, 'trade');
+
+      tradingInterval = setInterval(async () => {
+        try {
+          const isBuy = Math.random() < ratio;
+          const tradeAmount = Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL);
+          
+          const inputMint = isBuy ? 'So11111111111111111111111111111111111111112' : mint;
+          const outputMint = isBuy ? mint : 'So11111111111111111111111111111111111111112';
+          
+          const quote = await getJupiterQuote(inputMint, outputMint, tradeAmount, slippage);
+          if (!quote || quote.error) {
+            log(`No route found`, 'error');
+            return;
+          }
+
+          const signature = await executeJupiterSwap(quote, wallet);
+          if (signature) {
+            const action = isBuy ? 'BUY' : 'SELL';
+            log(`[${action}] ${amount} SOL → ${quote.outAmount} tokens`, 'trade');
+            
+            const logDiv = document.getElementById('tradeLog');
+            const entry = document.createElement('div');
+            entry.className = `trade-entry ${isBuy ? 'buy' : 'sell'}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${action} ${amount} SOL | Tx: ${signature.slice(0, 16)}...`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+          }
+        } catch (err) {
+          log(`Trade error: ${err.message}`, 'error');
+        }
+      }, interval);
+    }
+
+    function stopTrading() {
+      if (tradingInterval) {
+        clearInterval(tradingInterval);
+        tradingInterval = null;
+      }
+      document.getElementById('startTradingBtn').disabled = false;
+      document.getElementById('stopTradingBtn').disabled = true;
+      log('🛑 Trading bot stopped', 'trade');
+    }
+
+    // Initialize
+    log('System ready. Create a wallet to start.');
+  </script>
+</body>
+</html>
