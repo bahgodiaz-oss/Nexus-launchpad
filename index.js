@@ -1,23 +1,26 @@
 const express = require('express');
-const mongoose = require('mongoose');
-
+const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(express.json());
+app.use(cors());
+app.use(express.json()); // For parsing application/json
+app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 
-// Database connection
-mongoose.connect('mongodb://localhost:27017/nexus-launchpad', { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Database connected'))
-    .catch(err => console.error('Database connection error:', err));
+// Import all routes here
+const exampleRoutes = require('./routes/example'); // Adjust the route file names
+app.use('/api/example', exampleRoutes); // Example route
 
-// API routes
-app.get('/', (req, res) => {
-    res.send('Welcome to Nexus Launchpad API');
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
 
-// Start the server
+// Configuration handling (if using dotenv)
+require('dotenv').config();
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
